@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>WebGL</title>
+	<script src="./gl-matrix-min.js" defer></script>
+	<script src="./Loader.js" defer></script>
+	<script src="./Shader.js" defer></script>
+	<script src="./Vertex.js" defer></script>
+	<script src="./Entity.js" defer></script>
+	<script src="./Box.js" defer></script>
+	<script src="./webgl.js" defer></script>
+</head>
+<style>
+	*{
+		margin: 0;
+		width: 100vw;
+		height: 100vh;
+	}
+
+	canvas{
+		display: block;
+		border: none;
+		padding: none;
+	}
+</style>
+<body>
+	<script id='vS' type="x-shader/x-vertex">
+		attribute vec3 position;
+		attribute vec2 texCoord;
+		uniform mat4 projection;
+		uniform mat4 model;
+		uniform mat4 view;
+		varying highp vec2 vTexCoord;
+		
+		void main(){
+			gl_Position = projection * view * model * vec4(position, 1.0);
+			gl_PointSize = 10.0;
+			vTexCoord = texCoord;
+		}
+	</script>
+	<script id='fS' type="x-shader/x-fragment">
+		precision mediump float;
+		varying highp vec2 vTexCoord;
+		uniform float iTime;
+		uniform sampler2D uSampler;
+		vec4 select = vec4(1.0, 1.0, 1.0, 1.0);
+		void main(){
+			gl_FragColor =  select * texture2D(uSampler, vTexCoord);
+		}
+	</script>
+</body>
+</html>
