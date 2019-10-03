@@ -19,7 +19,9 @@ class Box extends Entity{
       y: 1.0,
       z: 1.0
     };
-    
+    this.modelMat = null;
+    this.inverse = null;
+    this.inversTranspose = null;
     this.shaderObj = {};
     super.bindTex(gl.getUniformLocation(this.shader, 'uSampler'))
     this.nl = [0.0, 0.0, 0.0];
@@ -133,6 +135,43 @@ class Box extends Entity{
         ...this.i("12, 13, 14"),
         ...this.i("16, 17, 18"),
         ...this.i("20, 21, 22")
+      ],
+      normalData: [
+        //back
+        ...[0.0, 0.0, -1.0],
+        ...[0.0, 0.0, -1.0],
+        ...[0.0, 0.0, -1.0],
+        ...[0.0, 0.0, -1.0],
+
+        //front
+        ...[0.0, 0.0, 1.0],
+        ...[0.0, 0.0, 1.0],
+        ...[0.0, 0.0, 1.0],
+        ...[0.0, 0.0, 1.0],
+
+        //left
+        ...[-1.0, 0.0, 0.0],
+        ...[-1.0, 0.0, 0.0],
+        ...[-1.0, 0.0, 0.0],
+        ...[-1.0, 0.0, 0.0],
+
+        //right
+        ...[1.0, 0.0, 0.0],
+        ...[1.0, 0.0, 0.0],
+        ...[1.0, 0.0, 0.0],
+        ...[1.0, 0.0, 0.0],
+
+        //top
+        ...[0.0, -1.0, 0.0],
+        ...[0.0, -1.0, 0.0],
+        ...[0.0, -1.0, 0.0],
+        ...[0.0, -1.0, 0.0],
+
+        //bottom
+        ...[0.0, 1.0, 0.0],
+        ...[0.0, 1.0, 0.0],
+        ...[0.0, 1.0, 0.0],
+        ...[0.0, 1.0, 0.0]
       ]
     };
   }
@@ -156,15 +195,37 @@ class Box extends Entity{
   }
 
   setup() {
-    
-    this.shaderObj.modelMatrix = this.gl.getUniformLocation(this.shader, 'model');
-    loadMat4ToLocation(this.shaderObj.modelMatrix, transform(this.getPosition(), this.getRotation(), this.getSize()));
+    this.modelMat = transform(
+      this.getPosition(),
+      this.getRotation(),
+      this.getSize()
+    );
+    this.inverse = mat4.invert(this.modelMat, this.modelMat);
+    this.inverseTranspose = mat4.transpose(this.inverse, this.inverse);
+    this.shaderObj.modelMatrix = this.gl.getUniformLocation(
+      this.shader,
+      "model"
+    );
+    loadMat4ToLocation(this.shaderObj.modelMatrix, this.modelMat);
+    this.shaderObj.inversTranspose = this.gl.getUniformLocation(
+      this.shader,
+      "modelInverseTranspose"
+    );
+    loadMat4ToLocation(this.shaderObj.inversTranspose, this.inverseTranspose);
     let tex = this.makeTexCord(this.get().indexData.length);
+    load(this.get().vertexData, tex, this.get().normalData);
     loadToIBO(this.get().indexData);
-    load(this.get().vertexData, tex);
   }
 
   update(){
+    this.modelMat = transform(
+      this.getPosition(),
+      this.getRotation(),
+      this.getSize()
+    );
+    this.inverse = mat4.invert(this.modelMat, this.modelMat);
+    this.inverseTranspose = mat4.transpose(this.inverse, this.inverse);
+    loadMat4ToLocation(this.shaderObj.inversTranspose, this.inverseTranspose);
     loadMat4ToLocation(
       this.shaderObj.modelMatrix,
       transform(this.getPosition(), this.getRotation(), this.getSize())

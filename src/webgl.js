@@ -1,6 +1,11 @@
 let canvas = document.createElement('canvas');
-canvas.width = screen.availWidth;
-canvas.height = screen.availHeight;
+var DISPLAY = {
+	W: window.innerWidth,
+	H: window.innerHeight
+};
+
+canvas.width = DISPLAY.W;
+canvas.height = DISPLAY.H;
 document.body.appendChild(canvas);
 
 let gl = canvas.getContext('webgl');
@@ -50,6 +55,17 @@ canvas.onmousemove = function(e){
 canvas.onmouseup = function(e) {
 	input.mouse.last = getMouse(e);
 	input.mouse.pressed = false;
+};
+
+var lastScroll = 0;
+window.onscroll = function(e) {
+  let st = document.body.scrollTop;
+  if (st > lastScroll) {
+    console.log(st);
+  } else {
+    console.log(st);
+  }
+  lastScroll = st;
 };
 
 function getMouse(event, target) {
@@ -105,11 +121,33 @@ let projectionMat = mat4.create();
 //mat4.identity(projectionMat);
 mat4.perspective(projectionMat, toRad(93), canvas.width/canvas.height, 0.1, 1e3);
 
+var cameraObj = {
+	z: 1
+};
+
+var gui = new dat.GUI();
+gui.add(cameraObj, 'z', 0.1, 25);
+
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  gl.viewport(0, 0, canvas.width, canvas.height); 
+  mat4.perspective(
+    projectionMat,
+    toRad(93),
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1e3
+  );
+
+});
+
 
 function camera(pos, lookat){
 	let viewMat = mat4.create();
 	mat4.identity(viewMat);
 	mat4.lookAt(viewMat, pos, lookat, [0.0, 1.0, 0.0]);
+	mat4.invert(viewMat, viewMat);
 	return viewMat;
 }
 
@@ -118,8 +156,12 @@ function camera(pos, lookat){
 
 let UniformLoc = {};
 let shader = new Shader(gl);
-shader.loadMatrices(projectionMat, camera([0.0, 1.51, -1.0], [0.0, 0.0, 0.0]));
-let box = new Box(shader.get(), "tex4.png", 0);
+shader.loadMatrices(projectionMat, camera([0.0, 0.51, cameraObj.z], [0.0, 0.0, 0.0]));
+let box = new Box(
+  shader.get(),
+  "tex5.jpg",
+  0
+);
 UniformLoc = shader.uniformObj();
 function setup() {
   gl.viewport(0, 0, canvas.width, canvas.height);
@@ -134,6 +176,10 @@ function lerp(fv, sv, t){
 function update () {
 	gl.clearColor((83-80)/255, (119-80)/255, (166-80)/255, 1.0);
 	gl.clear(gl.COLOR_BUFFER_BIT || gl.DEPTH_BUFFER_BIT);
+	shader.loadMatrices(
+    projectionMat,
+    camera([0.0, 0.0, -cameraObj.z], [0.0, 0.0, 0.0])
+  );
 	box.rotate([-input.current.angle.y, input.current.angle.x, 0.0]);
 }
 

@@ -84,7 +84,7 @@ function isPowerOf2(value) {
   return (value & (value - 1)) == 0;
 }
 
-function load(vertices, texture){
+function load(vertices, texture, normals=null){
 	let vbo = loadToVBO(vertices);
 	gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 	gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
@@ -93,6 +93,12 @@ function load(vertices, texture){
 	gl.bindBuffer(gl.ARRAY_BUFFER, vbo0);
 	gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(1);
+	if(normals){
+		let vbo1 = loadToVBO(normals);
+		gl.bindBuffer(gl.ARRAY_BUFFER, vbo1);
+		gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray(2);
+	}
 }
 
 function loadMat4ToLocation(loc, mat4){

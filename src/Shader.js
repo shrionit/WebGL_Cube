@@ -11,6 +11,7 @@ class Shader {
         modelMat: this.gl.getUniformLocation(this.shader, "model"),
         viewMat: this.gl.getUniformLocation(this.shader, "view"),
         projectionMat: this.gl.getUniformLocation(this.shader, "projection"),
+        transposeInvers: this.gl.getUniformLocation(this.shader,"modelInverseTranspose")
       };
   }
 
